@@ -27,8 +27,13 @@ export function iterateCursor<T extends IDBCursor>(cursorRequest: IDBRequest<T |
     });
 }
 
-export async function getAllPrimaryKeysAndValues(store: IDBObjectStore | IDBIndex, query?: IDBValidKey | IDBKeyRange | null, count?: number): Promise<{ key: IDBValidKey, value: any; }[]> {
-    const ret: { key: IDBValidKey, value: any; }[] = [];
+interface KeyAndValue {
+    key: IDBValidKey;
+    value: any;
+}
+
+export async function getAllPrimaryKeysAndValues(store: IDBObjectStore | IDBIndex, query?: IDBValidKey | IDBKeyRange | null, count?: number): Promise<KeyAndValue[]> {
+    const ret: KeyAndValue[] = [];
     if (count === undefined) {
         await iterateCursor(store.openCursor(query), cursor => {
             ret.push({ key: cursor.primaryKey, value: cursor.value });

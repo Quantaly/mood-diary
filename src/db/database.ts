@@ -42,7 +42,7 @@ const entryKeyRegex = /^\d\d\d\d-\d\d-\d\d$/;
 
 export function dateToEntryKey(date: Date): string {
     const year = date.getFullYear().toString().padStart(4, "0");
-    const month = date.getMonth().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
     return `${year}-${month}-${day}`;
 }
@@ -69,7 +69,7 @@ export async function getEntryForDate(date: string | Date, orCreate: false): Pro
 export async function getEntryForDate(date: string | Date, orCreate?: boolean): Promise<Entry | undefined> {
     date = convertAndCheckDate(date);
     const db = await dbPromise;
-    if (orCreate) {
+    if (orCreate || orCreate === undefined) {
         const txn = db.transaction(ENTRY_STORE_NAME, "readwrite");
         const entryStore = txn.objectStore(ENTRY_STORE_NAME);
         const entry = await idbRequestToPromise(entryStore.get(date));
