@@ -58,7 +58,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import * as db from "../db/database";
+import * as db from "../db/accessors";
 import { Entry } from "../db/models";
 import MusingsEditor from "../components/MusingsEditor.vue";
 

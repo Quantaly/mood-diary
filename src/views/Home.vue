@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import * as db from "../db/database";
+import * as db from "../db/accessors";
 import { Entry } from "../db/models";
 
 @Component({})
@@ -33,7 +33,7 @@ export default class Home extends Vue {
   entries: Entry[] = [];
 
   created() {
-    db.getEntries().then((e) => (this.entries = e));
+    db.getEntries().then((e) => (this.entries = e.reverse()));
   }
 
   get today() {

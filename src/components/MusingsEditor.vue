@@ -7,7 +7,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Musings } from "../db/models"; 
-import * as db from "../db/database";
+import * as db from "../db/accessors";
 
 @Component({})
 export default class MusingsEditor extends Vue {
