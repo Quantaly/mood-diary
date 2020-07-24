@@ -1,6 +1,6 @@
-import { idbRequestToPromise, completeTransaction, getAllPrimaryKeysAndValues } from './idbHelpers';
+import { idbRequestToPromise, completeTransaction } from './idbHelpers';
 import { withConsoleGroup } from '../consoleHelpers';
-import { Entry, Musings, KeyedMusings } from './models';
+import { Entry, Musings, MusingsType } from './models';
 
 const DATABASE_VERSION = 1;
 const DATABASE_NAME = "mood-diary:db";
@@ -99,27 +99,43 @@ export async function saveEntry(entry: Entry): Promise<void> {
     await completeTransaction(txn);
 }
 
-export async function getMusingsForDate(date: string | Date): Promise<KeyedMusings[]> {
+export async function createMusingsForDate(date: string | Date, type: MusingsType): Promise<number> {
+    date = convertAndCheckDate(date);
+    const db = await dbPromise;
+    const txn = db.transaction([ENTRY_STORE_NAME, MUSINGS_STORE_NAME], "readwrite");
+    const entryStore = txn.objectStore(ENTRY_STORE_NAME);
+    const musingsStore = txn.objectStore(MUSINGS_STORE_NAME);
+    if (!(await idbRequestToPromise(entryStore.count(date)) > 0)) {
+        txn.abort();
+        throw `${date} does not have an entry`;
+    }
+    const newMusings: Musings = {
+        entry: date,
+        type: type,
+        contents: "",
+    };
+    const ret = await idbRequestToPromise(musingsStore.add(newMusings));
+    await completeTransaction(txn);
+    return ret as number;
+}
+
+export async function getMusingsKeysForDate(date: string | Date): Promise<number[]> {
     date = convertAndCheckDate(date);
     const db = await dbPromise;
     const txn = db.transaction(MUSINGS_STORE_NAME, "readonly");
     const musingsStore = txn.objectStore(MUSINGS_STORE_NAME);
     const musingsEntryIndex = musingsStore.index(MUSINGS_ENTRY_INDEX_NAME);
-    const kvMaps = await getAllPrimaryKeysAndValues(musingsEntryIndex, date);
-    return kvMaps.map(m => {
-        return {
-            key: m.key,
-            ...m.value,
-        };
-    });
+    return idbRequestToPromise(musingsEntryIndex.getAllKeys(date)) as Promise<number[]>;
 }
 
-export async function saveMusings(musings: Musings, key?: number): Promise<number>;
-export async function saveMusings(musings: KeyedMusings): Promise<number>;
-export async function saveMusings(musings: Musings | KeyedMusings, key?: number): Promise<number> {
-    if ("key" in musings) {
-        return saveMusings({ entry: musings.entry, type: musings.type, contents: musings.contents }, musings.key);
-    }
+export async function getMusingsByKey(key: number): Promise<Musings> {
+    const db = await dbPromise;
+    const txn = db.transaction(MUSINGS_STORE_NAME, "readonly");
+    const musingsStore = txn.objectStore(MUSINGS_STORE_NAME);
+    return idbRequestToPromise(musingsStore.get(key));
+}
+
+export async function saveMusings(musings: Musings, key: number): Promise<number> {
     if (!entryKeyRegex.test(musings.entry)) {
         throw `${musings.entry} is not a valid date string`;
     }

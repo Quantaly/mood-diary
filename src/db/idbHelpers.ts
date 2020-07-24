@@ -26,23 +26,3 @@ export function iterateCursor<T extends IDBCursor>(cursorRequest: IDBRequest<T |
         cursorRequest.addEventListener("error", () => reject(cursorRequest.error));
     });
 }
-
-interface KeyAndValue {
-    key: IDBValidKey;
-    value: any;
-}
-
-export async function getAllPrimaryKeysAndValues(store: IDBObjectStore | IDBIndex, query?: IDBValidKey | IDBKeyRange | null, count?: number): Promise<KeyAndValue[]> {
-    const ret: KeyAndValue[] = [];
-    if (count === undefined) {
-        await iterateCursor(store.openCursor(query), cursor => {
-            ret.push({ key: cursor.primaryKey, value: cursor.value });
-        });
-    } else {
-        await iterateCursor(store.openCursor(query), cursor => {
-            ret.push({ key: cursor.primaryKey, value: cursor.value });
-            return --(count as number) > 0;
-        });
-    }
-    return ret;
-}
