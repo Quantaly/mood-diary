@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/podcast-app/precache-manifest.5fd38d03630824fa080e386218cb5278.js"
+  "/mood-diary/precache-manifest.ea8b9b2ad95fe690d22ee324fed61465.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "mood-diary"});
