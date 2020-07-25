@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { CreateElement } from 'vue';
 import App from './App.vue';
 import './registerServiceWorker';
 import router from './router';
@@ -6,8 +6,11 @@ import vuetify from './plugins/vuetify';
 
 Vue.config.productionTip = false;
 
-new Vue({
+// have to do it like this otherwise typescript complains
+const vueOptions = {
   router,
   vuetify,
-  render: h => h(App)
-}).$mount('#app');
+  render: (h: CreateElement) => h(App)
+};
+
+new Vue(vueOptions).$mount('#app');
