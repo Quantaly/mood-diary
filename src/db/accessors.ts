@@ -110,3 +110,40 @@ export async function saveMusings(musings: Musings, key: number): Promise<number
     await completeTransaction(txn);
     return ret as number;
 }
+
+export async function deleteEntryAndMusings(date: string | Date): Promise<boolean> {
+    date = convertAndCheckDate(date);
+    const db = await dbPromise;
+    const txn = db.transaction([ENTRY_STORE_NAME, MUSINGS_STORE_NAME], "readwrite");
+    const entryStore = txn.objectStore(ENTRY_STORE_NAME);
+    const musingsStore = txn.objectStore(MUSINGS_STORE_NAME);
+    const musingsEntryIndex = musingsStore.index(MUSINGS_ENTRY_INDEX_NAME);
+
+    const exists = await idbRequestToPromise(entryStore.count(date)) > 0;
+    if (exists) {
+        const promises: Promise<any>[] = [];
+        promises.push(idbRequestToPromise(entryStore.delete(date)));
+        for (const musingsKey of await idbRequestToPromise(musingsEntryIndex.getAllKeys(date))) {
+            promises.push(idbRequestToPromise(musingsStore.delete(musingsKey)));
+        }
+        await Promise.all(promises);
+        await completeTransaction(txn);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+export async function deleteMusings(key: number): Promise<boolean> {
+    const db = await dbPromise;
+    const txn = db.transaction(MUSINGS_STORE_NAME, "readwrite");
+    const musingsStore = txn.objectStore(MUSINGS_STORE_NAME);
+    const exists = await idbRequestToPromise(musingsStore.count(key)) > 0;
+    if (exists) {
+        await idbRequestToPromise(musingsStore.delete(key));
+        await completeTransaction(txn);
+        return true;
+    } else {
+        return false;
+    }
+}

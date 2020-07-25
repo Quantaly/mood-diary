@@ -18,10 +18,10 @@
           />
         </div>
 
-        <div v-for="key of musings" :key="key">
+        <div v-for="(key, i) of musings" :key="key">
           <v-divider />
-          <div class="top-padded-container">
-            <MusingsEditor :musingsKey="key" />
+          <div class="padded-container">
+            <MusingsEditor :musingsKey="key" @delete="deleteMusings(i)" />
           </div>
         </div>
 
@@ -88,6 +88,10 @@ export default class EntryView extends Vue {
     db.createMusingsForDate(this.date, "text").then((id) => {
       this.musings.push(id); // for some reason it doesn't work when I just pass this.musings.push
     });
+  }
+
+  deleteMusings(i: number) {
+    this.musings.splice(i, 1);
   }
 }
 </script>

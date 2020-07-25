@@ -3,15 +3,16 @@
     <v-main>
       <v-container fluid>
         <v-list>
-          <v-list-item
-            v-for="entry in entries"
-            :key="entry.date"
-            :to="'/' + entry.date"
-          >
+          <v-list-item v-for="entry in entries" :key="entry.date" :to="'/' + entry.date">
             <v-list-item-content>
               <v-list-item-title>{{ entry.date }}</v-list-item-title>
               <v-list-item-subtitle>Mood: {{ entry.mood }}</v-list-item-subtitle>
             </v-list-item-content>
+            <v-list-item-action>
+              <v-btn icon @click.prevent="deleteEntry(entry.date)">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </v-list-item-action>
           </v-list-item>
         </v-list>
       </v-container>
@@ -32,16 +33,27 @@ import { Entry } from "../db/models";
 export default class Home extends Vue {
   entries: Entry[] = [];
 
-  created() {
+  updateListing() {
     db.getEntries().then((e) => (this.entries = e.reverse()));
   }
 
+  created() {
+    this.updateListing();
+  }
+
   get today() {
-      const now = new Date();
-      if (now.getHours() < 5) { // if I'm writing before 5 am, it's probably about the previous day
-          now.setTime(now.getTime() - 1000 * 60 * 60 * 24);
-      }
-      return db.dateToEntryKey(now);
+    const now = new Date();
+    if (now.getHours() < 5) {
+      // if I'm writing before 5 am, it's probably about the previous day
+      now.setTime(now.getTime() - 1000 * 60 * 60 * 24);
+    }
+    return db.dateToEntryKey(now);
+  }
+
+  deleteEntry(date: string) {
+    db.deleteEntryAndMusings(date).then(() => {
+      this.updateListing();
+    });
   }
 }
 </script>
