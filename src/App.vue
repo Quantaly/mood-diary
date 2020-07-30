@@ -33,6 +33,14 @@
             <v-list-item-title>Import XML</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item @click="exportCSV">
+          <v-list-item-action>
+            <v-icon>mdi-file-delimited-outline</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Export CSV</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
   </v-app>
@@ -40,7 +48,8 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import * as db from "./db/xml";
+import * as xml from "./db/xml";
+import * as csv from "./db/csv";
 
 @Component({})
 export default class App extends Vue {
@@ -64,7 +73,7 @@ export default class App extends Vue {
   }
 
   exportXML() {
-    db.exportXML().then(blob => {
+    xml.exportXML().then(blob => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "diary.xml";
@@ -82,7 +91,7 @@ export default class App extends Vue {
     input.style.display = "none";
     input.addEventListener("input", () => {
       if (input?.files?.[0]) {
-        db.importXML(input.files[0]).then(() => {
+        xml.importXML(input.files[0]).then(() => {
           location.reload(false);
         });
       }
@@ -90,6 +99,18 @@ export default class App extends Vue {
     document.body.appendChild(input);
     input.click();
     input.remove();
+  }
+
+  exportCSV() {
+    csv.exportCSV().then(blob => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "diary.csv";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
   }
 }
 </script>
