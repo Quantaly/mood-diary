@@ -35,4 +35,3 @@ export const dbPromise: Promise<IDBDatabase> = new Promise((resolve, reject) => 
         });
     });
 });
-
