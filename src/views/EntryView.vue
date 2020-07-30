@@ -45,11 +45,6 @@
   padding: 1em 0;
 }
 
-.top-padded-container {
-  @extend .padded-container;
-  padding-bottom: 0;
-}
-
 .slider-container {
   @extend .padded-container;
   max-width: 400px;
@@ -66,6 +61,11 @@ import MusingsEditor from "../components/MusingsEditor.vue";
   components: {
     MusingsEditor,
   },
+  watch: {
+    $route(this: EntryView) {
+      this.loadEntry();
+    },
+  },
 })
 export default class EntryView extends Vue {
   entry: Entry = { date: "", mood: 0 };
@@ -79,9 +79,13 @@ export default class EntryView extends Vue {
     db.saveEntry(this.entry);
   }
 
-  created() {
+  loadEntry() {
     db.getEntryForDate(this.date).then((e) => (this.entry = e));
     db.getMusingsKeysForDate(this.date).then((m) => (this.musings = m));
+  }
+
+  created() {
+    this.loadEntry();
   }
 
   addMusings() {
