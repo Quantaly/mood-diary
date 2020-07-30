@@ -42,6 +42,19 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+
+      <template v-slot:append>
+        <v-card loading tile>
+          <v-card-text>{{ storageEstimate.message }}</v-card-text>
+          <template v-slot:progress>
+            <v-progress-linear
+              color="green"
+              :value="storageEstimate.percent"
+              :indeterminate="storageEstimate.percent < 0"
+            />
+          </template>
+        </v-card>
+      </template>
     </v-navigation-drawer>
   </v-app>
 </template>
@@ -50,11 +63,16 @@
 import { Component, Vue } from "vue-property-decorator";
 import * as xml from "./db/xml";
 import * as csv from "./db/csv";
+import estimateStorage, { FormattedEstimate } from "./storageEstimation";
 
 @Component({})
 export default class App extends Vue {
   drawerOpen = false;
   storagePersisted = false;
+  storageEstimate: FormattedEstimate = {
+    message: "Estimating storage...",
+    percent: -1,
+  };
 
   get storageMessage() {
     return this.storagePersisted ? "Storage persisted" : "Persist storage";
@@ -65,6 +83,7 @@ export default class App extends Vue {
   }
 
   created() {
+    estimateStorage().then((e) => (this.storageEstimate = e));
     navigator.storage.persisted().then((p) => (this.storagePersisted = p));
   }
 
@@ -73,7 +92,7 @@ export default class App extends Vue {
   }
 
   exportXML() {
-    xml.exportXML().then(blob => {
+    xml.exportXML().then((blob) => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "diary.xml";
@@ -102,7 +121,7 @@ export default class App extends Vue {
   }
 
   exportCSV() {
-    csv.exportCSV().then(blob => {
+    csv.exportCSV().then((blob) => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "diary.csv";
